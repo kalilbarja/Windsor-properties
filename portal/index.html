@@ -1,1 +1,1988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windsor Properties | Portal de Residentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        :root {
+            --green-dark: #2D4A2D;
+            --green-mid: #3D5A3D;
+            --green-light: #4A6B4A;
+            --green-pale: rgba(61, 90, 61, 0.1);
+            --gold: #8B7D3A;
+            --cream: #FAFAF8;
+            --white: #FFFFFF;
+            --gray-light: #F5F5F3;
+            --gray-border: #E5E5E3;
+            --gray-text: #6B6B6B;
+            --black: #1A1A1A;
+            --red: #DC3545;
+            --red-light: #FFF5F5;
+            --yellow: #F0AD4E;
+            --yellow-light: #FFFBF0;
+            --blue: #0066CC;
+            --blue-light: #F0F7FF;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-light);
+            color: var(--black);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ==================== LOGIN PAGE ==================== */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--gray-light) 0%, var(--white) 100%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo img {
+            height: 100px;
+            width: auto;
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .login-card h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .login-card .subtitle {
+            font-size: 0.9rem;
+            color: var(--gray-text);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            border: 1px solid var(--gray-border);
+            border-radius: 8px;
+            background: var(--white);
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--green-mid);
+            box-shadow: 0 0 0 3px var(--green-pale);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--green-mid);
+            color: var(--white);
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--green-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-light);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-border);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--green-mid);
+            border: 1px solid var(--green-mid);
+        }
+
+        .btn-outline:hover {
+            background: var(--green-pale);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .login-error {
+            background: var(--red-light);
+            color: var(--red);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .lang-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .lang-btn {
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            color: var(--gray-text);
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:hover {
+            color: var(--green-mid);
+        }
+
+        .lang-btn.active {
+            color: var(--green-mid);
+            background: var(--green-pale);
+            font-weight: 500;
+        }
+
+        /* ==================== MAIN APP LAYOUT ==================== */
+        .app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app.active {
+            display: block;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background: var(--white);
+            border-right: 1px solid var(--gray-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-border);
+        }
+
+        .sidebar-header img {
+            height: 60px;
+            width: auto;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            color: var(--gray-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--gray-light);
+            color: var(--black);
+        }
+
+        .nav-item.active {
+            background: var(--green-pale);
+            color: var(--green-mid);
+            font-weight: 500;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-border);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--green-pale);
+            color: var(--green-mid);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--black);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-unit {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            background: none;
+            border: 1px solid var(--gray-border);
+            border-radius: 6px;
+            color: var(--gray-text);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: var(--red-light);
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--black);
+            margin-bottom: 0.25rem;
+        }
+
+        .page-header p {
+            font-size: 0.95rem;
+            color: var(--gray-text);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--gray-border);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--gray-border);
+            padding: 1.25rem;
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: var(--gray-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .stat-card .value.pending {
+            color: var(--yellow);
+        }
+
+        .stat-card .value.completed {
+            color: var(--green-mid);
+        }
+
+        /* Request List */
+        .request-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .request-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--gray-light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .request-item:hover {
+            background: var(--gray-border);
+        }
+
+        .request-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .request-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .request-category {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        .request-date {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+        }
+
+        .request-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: var(--yellow-light);
+            color: var(--yellow);
+        }
+
+        .status-in-progress {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        .status-completed {
+            background: var(--green-pale);
+            color: var(--green-mid);
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .form-grid .full-width {
+            grid-column: span 2;
+        }
+
+        /* Contact Info */
+        .contact-box {
+            background: var(--green-pale);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .contact-box svg {
+            width: 20px;
+            height: 20px;
+            color: var(--green-mid);
+        }
+
+        .contact-box span {
+            font-size: 0.9rem;
+            color: var(--green-mid);
+        }
+
+        .contact-box a {
+            color: var(--green-dark);
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .contact-box a:hover {
+            text-decoration: underline;
+        }
+
+        /* Lease Info */
+        .lease-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .lease-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--gray-light);
+            border-radius: 12px;
+        }
+
+        .lease-item .label {
+            font-size: 0.85rem;
+            color: var(--gray-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .lease-item .value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        /* Profile */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .profile-item {
+            padding: 1rem;
+            background: var(--gray-light);
+            border-radius: 8px;
+        }
+
+        .profile-item .label {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-item .value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-text);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+
+        /* Request Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--white);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: all 0.2s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-border);
+        }
+
+        .modal-header h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--gray-text);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-light);
+            color: var(--black);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--gray-text);
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--black);
+            text-align: right;
+        }
+
+        /* Photo Upload */
+        .photo-upload {
+            border: 2px dashed var(--gray-border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .photo-upload:hover {
+            border-color: var(--green-mid);
+            background: var(--green-pale);
+        }
+
+        .photo-upload input {
+            display: none;
+        }
+
+        .photo-upload svg {
+            width: 32px;
+            height: 32px;
+            color: var(--gray-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-upload p {
+            font-size: 0.9rem;
+            color: var(--gray-text);
+        }
+
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .photo-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        /* Comments */
+        .comments-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--gray-border);
+        }
+
+        .comments-section h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .comment {
+            background: var(--gray-light);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-author {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .comment-date {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+        }
+
+        .comment-text {
+            font-size: 0.9rem;
+            color: var(--black);
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .add-comment input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .add-comment input:focus {
+            outline: none;
+            border-color: var(--green-mid);
+        }
+
+        /* Success Message */
+        .success-message {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--green-mid);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(calc(100% + 2rem));
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .success-message.show {
+            transform: translateX(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem;
+                background: var(--white);
+                border-bottom: 1px solid var(--gray-border);
+                margin: -2rem -2rem 2rem -2rem;
+            }
+
+            .mobile-header img {
+                height: 40px;
+            }
+
+            .hamburger {
+                background: none;
+                border: none;
+                padding: 0.5rem;
+                cursor: pointer;
+            }
+
+            .hamburger span {
+                display: block;
+                width: 24px;
+                height: 2px;
+                background: var(--black);
+                margin: 5px 0;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid .full-width {
+                grid-column: span 1;
+            }
+
+            .lease-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 901px) {
+            .mobile-header {
+                display: none;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--white);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-logo">
+                <div style="font-size:1.5rem;font-weight:600;color:#2D4A2D;">Windsor Properties</div>
+            </div>
+            <div class="login-card">
+                <h1 data-translate="login_title">Portal de Residentes</h1>
+                <p class="subtitle" data-translate="login_subtitle">Ingrese sus credenciales para acceder</p>
+                
+                <div id="loginError" class="login-error"></div>
+                
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label data-translate="email">Correo Electrónico</label>
+                        <input type="email" id="loginEmail" required placeholder="su@correo.com">
+                    </div>
+                    <div class="form-group">
+                        <label data-translate="password">Contraseña</label>
+                        <input type="password" id="loginPassword" required placeholder="Ingrese su contraseña">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <span data-translate="sign_in">Iniciar Sesión</span>
+                    </button>
+                </form>
+
+                <div class="lang-toggle">
+                    <button class="lang-btn active" onclick="setLanguage('es')">ES</button>
+                    <span style="color: var(--gray-text);">|</span>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app" class="app">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div style="font-size:1.5rem;font-weight:600;color:#2D4A2D;">Windsor Properties</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span data-translate="nav_dashboard">Panel Principal</span>
+                </button>
+                
+                <button class="nav-item" data-page="new-request">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    <span data-translate="nav_new_request">Nueva Solicitud</span>
+                </button>
+                
+                <button class="nav-item" data-page="my-requests">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <span data-translate="nav_my_requests">Mis Solicitudes</span>
+                </button>
+                
+                <button class="nav-item" data-page="lease">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span data-translate="nav_lease">Contrato</span>
+                </button>
+                
+                <button class="nav-item" data-page="profile">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span data-translate="nav_profile">Perfil</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">JD</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Juan Díaz</div>
+                        <div class="user-unit" id="userUnit">Unidad 4B</div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span data-translate="logout">Cerrar Sesión</span>
+                </button>
+                
+                <div class="lang-toggle" style="margin-top: 1rem;">
+                    <button class="lang-btn active" onclick="setLanguage('es')">ES</button>
+                    <span style="color: var(--gray-text);">|</span>
+                    <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Mobile Header -->
+            <div class="mobile-header">
+                <div style="font-size:1.5rem;font-weight:600;color:#2D4A2D;">Windsor Properties</div>
+                <button class="hamburger" onclick="toggleSidebar()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page active">
+                <div class="page-header">
+                    <h1 data-translate="welcome_message">¡Bienvenido, <span id="welcomeName">Juan</span>!</h1>
+                    <p data-translate="dashboard_subtitle">Aquí está el resumen de sus solicitudes de mantenimiento</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="label" data-translate="pending_requests">Solicitudes Pendientes</div>
+                        <div class="value pending" id="statPending">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label" data-translate="in_progress">En Progreso</div>
+                        <div class="value" id="statInProgress">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label" data-translate="completed_requests">Completadas</div>
+                        <div class="value completed" id="statCompleted">0</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="showPage('new-request')" style="margin-bottom: 2rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    <span data-translate="submit_new_request">Enviar Nueva Solicitud</span>
+                </button>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" data-translate="recent_requests">Solicitudes Recientes</h3>
+                    </div>
+                    <div id="recentRequests" class="request-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="contact-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span data-translate="contact_text">¿Preguntas? Contáctenos:</span>
+                    <a href="mailto:mantenimiento@windsorproperties.co">mantenimiento@windsorproperties.co</a>
+                </div>
+            </div>
+
+            <!-- New Request Page -->
+            <div id="page-new-request" class="page">
+                <div class="page-header">
+                    <h1 data-translate="new_request_title">Nueva Solicitud de Mantenimiento</h1>
+                    <p data-translate="new_request_subtitle">Complete el formulario para reportar un problema</p>
+                </div>
+
+                <div class="card">
+                    <form id="requestForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label data-translate="category">Categoría *</label>
+                                <select id="reqCategory" required>
+                                    <option value="" data-translate="select_category">Seleccione una categoría</option>
+                                    <option value="plumbing">Plomería</option>
+                                    <option value="electrical">Eléctrico</option>
+                                    <option value="hvac">HVAC (Calefacción/Enfriamiento)</option>
+                                    <option value="appliances">Electrodomésticos</option>
+                                    <option value="doors_windows">Puertas/Ventanas/Cerraduras</option>
+                                    <option value="pest_control">Control de Plagas</option>
+                                    <option value="structural">Estructural (Paredes/Techo/Pisos)</option>
+                                    <option value="other">Otro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-translate="location">Ubicación *</label>
+                                <select id="reqLocation" required>
+                                    <option value="" data-translate="select_location">Seleccione una ubicación</option>
+                                    <option value="kitchen">Cocina</option>
+                                    <option value="bathroom_main">Baño (Principal)</option>
+                                    <option value="bathroom_secondary">Baño (Secundario)</option>
+                                    <option value="bedroom">Dormitorio</option>
+                                    <option value="living_room">Sala</option>
+                                    <option value="laundry">Área de Lavandería</option>
+                                    <option value="exterior">Exterior/Balcón</option>
+                                    <option value="common_area">Área Común</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label data-translate="description">Descripción del Problema *</label>
+                                <textarea id="reqDescription" required placeholder="Describa el problema en detalle..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-translate="preferred_contact">Método de Contacto Preferido *</label>
+                                <select id="reqContact" required>
+                                    <option value="phone">Llamada Telefónica</option>
+                                    <option value="text">Mensaje de Texto</option>
+                                    <option value="email">Correo Electrónico</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-translate="time_window">Ventana de Tiempo Preferida *</label>
+                                <select id="reqTime" required>
+                                    <option value="morning">Mañana (8am-12pm)</option>
+                                    <option value="afternoon">Tarde (12pm-5pm)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-translate="contact_phone">Teléfono de Contacto</label>
+                                <input type="tel" id="reqPhone" placeholder="+1 809 555 1234">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label data-translate="contact_email">Correo de Contacto</label>
+                                <input type="email" id="reqEmail" placeholder="su@correo.com">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label data-translate="photos">Fotos (Opcional - Máximo 5)</label>
+                                <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                                    <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <polyline points="21 15 16 10 5 21"/>
+                                    </svg>
+                                    <p data-translate="upload_photos">Haga clic para subir fotos</p>
+                                </div>
+                                <div id="photoPreview" class="photo-preview"></div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">
+                            <span data-translate="submit_request">Enviar Solicitud</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- My Requests Page -->
+            <div id="page-my-requests" class="page">
+                <div class="page-header">
+                    <h1 data-translate="my_requests_title">Mis Solicitudes</h1>
+                    <p data-translate="my_requests_subtitle">Vea el estado de todas sus solicitudes de mantenimiento</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" data-translate="current_requests">Solicitudes Actuales</h3>
+                    </div>
+                    <div id="currentRequests" class="request-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" data-translate="request_history">Historial de Solicitudes</h3>
+                    </div>
+                    <div id="historyRequests" class="request-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lease Page -->
+            <div id="page-lease" class="page">
+                <div class="page-header">
+                    <h1 data-translate="lease_title">Información del Contrato</h1>
+                    <p data-translate="lease_subtitle">Detalles de su contrato de alquiler</p>
+                </div>
+
+                <div class="card">
+                    <div class="lease-grid">
+                        <div class="lease-item">
+                            <div class="label" data-translate="monthly_payment">Pago Mensual</div>
+                            <div class="value" id="leasePayment">—</div>
+                        </div>
+                        <div class="lease-item">
+                            <div class="label" data-translate="lease_start">Inicio del Contrato</div>
+                            <div class="value" id="leaseStart">—</div>
+                        </div>
+                        <div class="lease-item">
+                            <div class="label" data-translate="lease_end">Fin del Contrato</div>
+                            <div class="value" id="leaseEnd">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span data-translate="lease_questions">¿Preguntas sobre su contrato? Contáctenos:</span>
+                    <a href="mailto:info@windsorproperties.co">info@windsorproperties.co</a>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="page-profile" class="page">
+                <div class="page-header">
+                    <h1 data-translate="profile_title">Mi Perfil</h1>
+                    <p data-translate="profile_subtitle">Su información de contacto</p>
+                </div>
+
+                <div class="card">
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <div class="label" data-translate="full_name">Nombre Completo</div>
+                            <div class="value" id="profileName">—</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="label" data-translate="unit_number">Número de Unidad</div>
+                            <div class="value" id="profileUnit">—</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="label" data-translate="property">Propiedad</div>
+                            <div class="value" id="profileProperty">—</div>
+                        </div>
+                        <div class="profile-item">
+                            <div class="label" data-translate="phone">Teléfono</div>
+                            <div class="value" id="profilePhone">—</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label data-translate="email_editable">Correo Electrónico (Editable)</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="email" id="profileEmail" style="flex: 1;">
+                            <button class="btn btn-secondary" onclick="updateEmail()">
+                                <span data-translate="save">Guardar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Request Detail Modal -->
+    <div id="requestModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 data-translate="request_details">Detalles de la Solicitud</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        <span data-translate="request_submitted">¡Solicitud enviada exitosamente!</span>
+    </div>
+
+    <script>
+        // ==============================================
+        // CONFIGURATION
+        // ==============================================
+        const SUPABASE_URL = 'https://xwfcddnggaogrjavrzyc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3ZmNkZG5nZ2FvZ3JqYXZyenljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzNTU0MDQsImV4cCI6MjA4MzkzMTQwNH0.HeD2WxhDueNEEIA1X1nrp7Q5umOIVYJtb6c0HEv1z7c';
+        
+        // Initialize Supabase client
+        console.log('Initializing Supabase...');
+        let db;
+        try {
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase initialized successfully!');
+        } catch (e) {
+            console.error('Failed to initialize Supabase:', e);
+        }
+
+        // Global login handler
+        async function handleLogin(event) {
+            event.preventDefault();
+            console.log('handleLogin called!');
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            console.log('Email:', email);
+            await login(email, password);
+        }
+
+        // ==============================================
+        // TRANSLATIONS
+        // ==============================================
+        const translations = {
+            es: {
+                login_title: "Portal de Residentes",
+                login_subtitle: "Ingrese sus credenciales para acceder",
+                email: "Correo Electrónico",
+                password: "Contraseña",
+                sign_in: "Iniciar Sesión",
+                nav_dashboard: "Panel Principal",
+                nav_new_request: "Nueva Solicitud",
+                nav_my_requests: "Mis Solicitudes",
+                nav_lease: "Contrato",
+                nav_profile: "Perfil",
+                logout: "Cerrar Sesión",
+                welcome_message: "¡Bienvenido!",
+                dashboard_subtitle: "Aquí está el resumen de sus solicitudes de mantenimiento",
+                pending_requests: "Solicitudes Pendientes",
+                in_progress: "En Progreso",
+                completed_requests: "Completadas",
+                submit_new_request: "Enviar Nueva Solicitud",
+                recent_requests: "Solicitudes Recientes",
+                contact_text: "¿Preguntas? Contáctenos:",
+                new_request_title: "Nueva Solicitud de Mantenimiento",
+                new_request_subtitle: "Complete el formulario para reportar un problema",
+                category: "Categoría *",
+                select_category: "Seleccione una categoría",
+                location: "Ubicación *",
+                select_location: "Seleccione una ubicación",
+                description: "Descripción del Problema *",
+                preferred_contact: "Método de Contacto Preferido *",
+                time_window: "Ventana de Tiempo Preferida *",
+                contact_phone: "Teléfono de Contacto",
+                contact_email: "Correo de Contacto",
+                photos: "Fotos (Opcional - Máximo 5)",
+                upload_photos: "Haga clic para subir fotos",
+                submit_request: "Enviar Solicitud",
+                my_requests_title: "Mis Solicitudes",
+                my_requests_subtitle: "Vea el estado de todas sus solicitudes de mantenimiento",
+                current_requests: "Solicitudes Actuales",
+                request_history: "Historial de Solicitudes",
+                lease_title: "Información del Contrato",
+                lease_subtitle: "Detalles de su contrato de alquiler",
+                monthly_payment: "Pago Mensual",
+                lease_start: "Inicio del Contrato",
+                lease_end: "Fin del Contrato",
+                lease_questions: "¿Preguntas sobre su contrato? Contáctenos:",
+                profile_title: "Mi Perfil",
+                profile_subtitle: "Su información de contacto",
+                full_name: "Nombre Completo",
+                unit_number: "Número de Unidad",
+                property: "Propiedad",
+                phone: "Teléfono",
+                email_editable: "Correo Electrónico (Editable)",
+                save: "Guardar",
+                request_details: "Detalles de la Solicitud",
+                request_submitted: "¡Solicitud enviada exitosamente!",
+                no_requests: "No hay solicitudes",
+                status_pending: "Pendiente",
+                status_in_progress: "En Progreso",
+                status_completed: "Completado",
+                scheduled_for: "Programado para",
+                add_comment: "Agregar comentario...",
+                send: "Enviar"
+            },
+            en: {
+                login_title: "Resident Portal",
+                login_subtitle: "Enter your credentials to access",
+                email: "Email",
+                password: "Password",
+                sign_in: "Sign In",
+                nav_dashboard: "Dashboard",
+                nav_new_request: "New Request",
+                nav_my_requests: "My Requests",
+                nav_lease: "Lease",
+                nav_profile: "Profile",
+                logout: "Log Out",
+                welcome_message: "Welcome!",
+                dashboard_subtitle: "Here's a summary of your maintenance requests",
+                pending_requests: "Pending Requests",
+                in_progress: "In Progress",
+                completed_requests: "Completed",
+                submit_new_request: "Submit New Request",
+                recent_requests: "Recent Requests",
+                contact_text: "Questions? Contact us:",
+                new_request_title: "New Maintenance Request",
+                new_request_subtitle: "Complete the form to report an issue",
+                category: "Category *",
+                select_category: "Select a category",
+                location: "Location *",
+                select_location: "Select a location",
+                description: "Problem Description *",
+                preferred_contact: "Preferred Contact Method *",
+                time_window: "Preferred Time Window *",
+                contact_phone: "Contact Phone",
+                contact_email: "Contact Email",
+                photos: "Photos (Optional - Maximum 5)",
+                upload_photos: "Click to upload photos",
+                submit_request: "Submit Request",
+                my_requests_title: "My Requests",
+                my_requests_subtitle: "View the status of all your maintenance requests",
+                current_requests: "Current Requests",
+                request_history: "Request History",
+                lease_title: "Lease Information",
+                lease_subtitle: "Your rental agreement details",
+                monthly_payment: "Monthly Payment",
+                lease_start: "Lease Start",
+                lease_end: "Lease End",
+                lease_questions: "Questions about your lease? Contact us:",
+                profile_title: "My Profile",
+                profile_subtitle: "Your contact information",
+                full_name: "Full Name",
+                unit_number: "Unit Number",
+                property: "Property",
+                phone: "Phone",
+                email_editable: "Email (Editable)",
+                save: "Save",
+                request_details: "Request Details",
+                request_submitted: "Request submitted successfully!",
+                no_requests: "No requests",
+                status_pending: "Pending",
+                status_in_progress: "In Progress",
+                status_completed: "Completed",
+                scheduled_for: "Scheduled for",
+                add_comment: "Add a comment...",
+                send: "Send"
+            }
+        };
+
+        let currentLang = 'es';
+        let currentUser = null;
+        let uploadedPhotos = [];
+
+        // ==============================================
+        // LANGUAGE FUNCTIONS
+        // ==============================================
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === lang.toUpperCase());
+            });
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            localStorage.setItem('windsor-lang', lang);
+        }
+
+        // ==============================================
+        // NAVIGATION FUNCTIONS
+        // ==============================================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+            
+            // Close sidebar on mobile
+            document.getElementById('sidebar').classList.remove('open');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // ==============================================
+        // AUTHENTICATION FUNCTIONS
+        // ==============================================
+        async function login(email, password) {
+            console.log('Login started with:', email);
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.classList.add('loading');
+            loginBtn.innerHTML = '<div class="spinner"></div>';
+
+            try {
+                console.log('Attempting Supabase auth...');
+                console.log('Supabase URL:', SUPABASE_URL);
+                
+                const { data, error } = await db.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                console.log('Auth response:', data, error);
+
+                if (error) throw error;
+
+                console.log('Auth successful, fetching profile...');
+
+                // Get resident profile with unit info
+                const { data: profile, error: profileError } = await db
+                    .from('residents')
+                    .select(`
+                        *,
+                        units (
+                            identifier,
+                            property_id,
+                            properties (name)
+                        )
+                    `)
+                    .eq('user_id', data.user.id)
+                    .single();
+
+                console.log('Profile response:', profile, profileError);
+
+                if (profileError) {
+                    console.error('Profile error:', profileError);
+                    throw new Error('No se encontró perfil de residente para este usuario');
+                }
+
+                currentUser = {
+                    id: data.user.id,
+                    resident_id: profile.id,
+                    name: profile.name,
+                    email: profile.email,
+                    phone: profile.phone,
+                    unit: profile.units?.identifier || 'N/A',
+                    unit_id: profile.unit_id,
+                    property: profile.units?.properties?.name || 'Windsor Properties',
+                    property_id: profile.units?.property_id,
+                    lease_start: profile.lease_start,
+                    lease_end: profile.lease_end,
+                    monthly_payment: profile.monthly_payment
+                };
+
+                console.log('Current user set:', currentUser);
+                showApp();
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError(error.message);
+                loginBtn.classList.remove('loading');
+                loginBtn.innerHTML = '<span data-translate="sign_in">Iniciar Sesión</span>';
+            }
+        }
+
+        function showLoginError(message) {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('app').classList.remove('active');
+            if (db) {
+                db.auth.signOut();
+            }
+        }
+
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('app').classList.add('active');
+            
+            // Update user info in sidebar
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
+            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
+            document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+            
+            // Update profile page
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileUnit').textContent = currentUser.unit;
+            document.getElementById('profileProperty').textContent = currentUser.property;
+            document.getElementById('profilePhone').textContent = currentUser.phone;
+            document.getElementById('profileEmail').value = currentUser.email;
+            
+            // Update lease page
+            document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
+                `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
+            document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
+                formatDate(currentUser.lease_start) : '—';
+            document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
+                formatDate(currentUser.lease_end) : '—';
+            
+            // Pre-fill contact info in request form
+            document.getElementById('reqPhone').value = currentUser.phone || '';
+            document.getElementById('reqEmail').value = currentUser.email || '';
+            
+            // Load requests
+            loadRequests();
+        }
+
+        // ==============================================
+        // REQUEST FUNCTIONS
+        // ==============================================
+        async function loadRequests() {
+            try {
+                const { data, error } = await db
+                    .from('maintenance_requests')
+                    .select('*')
+                    .eq('resident_id', currentUser.resident_id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderRequests(data || []);
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                renderRequests([]);
+            }
+        }
+
+        function renderRequests(requests) {
+            const pending = requests.filter(r => r.status === 'pending');
+            const inProgress = requests.filter(r => r.status === 'in_progress');
+            const completed = requests.filter(r => r.status === 'completed');
+            
+            // Update stats
+            document.getElementById('statPending').textContent = pending.length;
+            document.getElementById('statInProgress').textContent = inProgress.length;
+            document.getElementById('statCompleted').textContent = completed.length;
+            
+            // Render recent requests (dashboard)
+            const recentEl = document.getElementById('recentRequests');
+            const recentRequests = [...requests].sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+            ).slice(0, 5);
+            
+            if (recentRequests.length === 0) {
+                recentEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <p>${translations[currentLang].no_requests}</p>
+                    </div>
+                `;
+            } else {
+                recentEl.innerHTML = recentRequests.map(r => renderRequestItem(r)).join('');
+            }
+            
+            // Render current requests (my requests page)
+            const currentEl = document.getElementById('currentRequests');
+            const currentRequests = requests.filter(r => r.status !== 'completed');
+            
+            if (currentRequests.length === 0) {
+                currentEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="16 12 12 8 8 12"/>
+                            <line x1="12" y1="16" x2="12" y2="8"/>
+                        </svg>
+                        <p>${translations[currentLang].no_requests}</p>
+                    </div>
+                `;
+            } else {
+                currentEl.innerHTML = currentRequests.map(r => renderRequestItem(r)).join('');
+            }
+            
+            // Render history (my requests page)
+            const historyEl = document.getElementById('historyRequests');
+            
+            if (completed.length === 0) {
+                historyEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        <p>${translations[currentLang].no_requests}</p>
+                    </div>
+                `;
+            } else {
+                historyEl.innerHTML = completed.map(r => renderRequestItem(r)).join('');
+            }
+        }
+
+        function renderRequestItem(request) {
+            const categoryIcons = {
+                plumbing: '🔧',
+                electrical: '⚡',
+                hvac: '❄️',
+                appliances: '🔌',
+                doors_windows: '🚪',
+                pest_control: '🐛',
+                structural: '🏗️',
+                other: '📋'
+            };
+            
+            const categoryNames = {
+                plumbing: 'Plomería',
+                electrical: 'Eléctrico',
+                hvac: 'HVAC',
+                appliances: 'Electrodomésticos',
+                doors_windows: 'Puertas/Ventanas',
+                pest_control: 'Control de Plagas',
+                structural: 'Estructural',
+                other: 'Otro'
+            };
+            
+            const statusClass = {
+                pending: 'status-pending',
+                in_progress: 'status-in-progress',
+                completed: 'status-completed'
+            };
+            
+            const statusText = {
+                pending: translations[currentLang].status_pending,
+                in_progress: translations[currentLang].status_in_progress,
+                completed: translations[currentLang].status_completed
+            };
+
+            return `
+                <div class="request-item" onclick="showRequestDetail(${request.id})">
+                    <div class="request-icon">${categoryIcons[request.category] || '📋'}</div>
+                    <div class="request-info">
+                        <div class="request-category">${categoryNames[request.category] || request.category}</div>
+                        <div class="request-date">${formatDate(request.created_at)}</div>
+                    </div>
+                    <span class="request-status ${statusClass[request.status]}">${statusText[request.status]}</span>
+                </div>
+            `;
+        }
+
+        function showRequestDetail(requestId) {
+            // In a real app, fetch the request details
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">ID de Solicitud</span>
+                    <span class="detail-value">#${requestId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Categoría</span>
+                    <span class="detail-value">Plomería</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ubicación</span>
+                    <span class="detail-value">Baño Principal</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Estado</span>
+                    <span class="detail-value"><span class="request-status status-pending">Pendiente</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Fecha de Envío</span>
+                    <span class="detail-value">10 de Enero, 2026</span>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-border);">
+                    <strong>Descripción:</strong>
+                    <p style="margin-top: 0.5rem; color: var(--gray-text);">La llave del lavamanos gotea constantemente.</p>
+                </div>
+                
+                <div class="comments-section">
+                    <h3>${currentLang === 'es' ? 'Comentarios' : 'Comments'}</h3>
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-author">Windsor Properties</span>
+                            <span class="comment-date">11 Ene, 2026</span>
+                        </div>
+                        <div class="comment-text">Hemos recibido su solicitud. Un técnico lo contactará pronto.</div>
+                    </div>
+                    <div class="add-comment">
+                        <input type="text" placeholder="${translations[currentLang].add_comment}">
+                        <button class="btn btn-primary btn-small">${translations[currentLang].send}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('requestModal').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('requestModal').classList.remove('active');
+            }
+        }
+
+        // ==============================================
+        // FORM FUNCTIONS
+        // ==============================================
+        async function submitRequest(formData) {
+            try {
+                // Save to database
+                const { data, error } = await db
+                    .from('maintenance_requests')
+                    .insert({
+                        resident_id: currentUser.resident_id,
+                        unit_id: currentUser.unit_id,
+                        property_id: currentUser.property_id,
+                        category: formData.category,
+                        location: formData.location,
+                        description: formData.description,
+                        preferred_contact: formData.contact_method,
+                        preferred_time: formData.time_window,
+                        contact_phone: formData.phone,
+                        contact_email: formData.email,
+                        status: 'pending'
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                console.log('Request saved:', data);
+
+                // Show success message
+                const successEl = document.getElementById('successMessage');
+                successEl.classList.add('show');
+                
+                setTimeout(() => {
+                    successEl.classList.remove('show');
+                }, 3000);
+                
+                // Reset form
+                document.getElementById('requestForm').reset();
+                document.getElementById('photoPreview').innerHTML = '';
+                uploadedPhotos = [];
+                
+                // Reload requests and go to dashboard
+                await loadRequests();
+                showPage('dashboard');
+
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                alert('Error al enviar solicitud: ' + error.message);
+            }
+            
+            // Reload requests
+            loadRequests();
+        }
+
+        function handlePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            const preview = document.getElementById('photoPreview');
+            
+            if (uploadedPhotos.length + files.length > 5) {
+                alert(currentLang === 'es' ? 'Máximo 5 fotos permitidas' : 'Maximum 5 photos allowed');
+                return;
+            }
+            
+            files.forEach(file => {
+                if (uploadedPhotos.length < 5) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        uploadedPhotos.push(e.target.result);
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'photo-thumb';
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        async function updateEmail() {
+            const newEmail = document.getElementById('profileEmail').value;
+            if (newEmail && newEmail !== currentUser.email) {
+                currentUser.email = newEmail;
+                alert(currentLang === 'es' ? 'Correo actualizado' : 'Email updated');
+            }
+        }
+
+        // ==============================================
+        // UTILITY FUNCTIONS
+        // ==============================================
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US', options);
+        }
+
+        // ==============================================
+        // INITIALIZATION
+        // ==============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved language
+            const savedLang = localStorage.getItem('windsor-lang') || 'es';
+            setLanguage(savedLang);
+            
+            // Setup navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const page = item.getAttribute('data-page');
+                    if (page) showPage(page);
+                });
+            });
+            
+            // Setup login form
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                await login(email, password);
+            });
+            
+            // Setup request form
+            document.getElementById('requestForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = {
+                    category: document.getElementById('reqCategory').value,
+                    location: document.getElementById('reqLocation').value,
+                    description: document.getElementById('reqDescription').value,
+                    contact_method: document.getElementById('reqContact').value,
+                    time_window: document.getElementById('reqTime').value,
+                    phone: document.getElementById('reqPhone').value,
+                    email: document.getElementById('reqEmail').value,
+                    photos: uploadedPhotos
+                };
+                await submitRequest(formData);
+            });
+            
+            // Check for existing session
+            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && supabase) {
+                db.auth.getSession().then(({ data: { session } }) => {
+                    if (session) {
+                        // Auto-login with existing session
+                        login(session.user.email, null);
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
