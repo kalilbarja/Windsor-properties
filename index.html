@@ -614,9 +614,9 @@
         </a>
         <ul class="nav-links">
             <li><a href="#features" data-en="Why Us" data-es="Por Qué Nosotros">Why Us</a></li>
-            <li><a href="#portal" data-en="Resident Portal" data-es="Portal de Residentes">Resident Portal</a></li>
+            <li><a href="/portal" data-en="Resident Portal" data-es="Portal de Residentes">Resident Portal</a></li>
             <li><a href="#contact" data-en="Contact" data-es="Contacto">Contact</a></li>
-            <li><a href="#portal" class="nav-cta" data-en="Sign In" data-es="Iniciar Sesión">Sign In</a></li>
+            <li><a href="/portal" class="nav-cta" data-en="Sign In" data-es="Iniciar Sesión">Sign In</a></li>
             <li class="lang-switcher">
                 <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
                 <span class="lang-divider">|</span>
@@ -637,7 +637,7 @@
             <h1 data-en="Find comfort in a place you'll love to call home" data-es="Encuentra comodidad en un lugar que amarás llamar hogar">Find comfort in a place you'll love to call home</h1>
             <p data-en="Windsor Properties offers thoughtfully maintained living spaces with responsive management and a resident experience designed around your needs." data-es="Windsor Properties ofrece espacios habitacionales cuidadosamente mantenidos con una gestión receptiva y una experiencia residencial diseñada en torno a sus necesidades.">Windsor Properties offers thoughtfully maintained living spaces with responsive management and a resident experience designed around your needs.</p>
             <div class="hero-buttons">
-                <a href="#portal" class="btn btn-primary" data-en="Resident Login" data-es="Acceso Residentes">Resident Login</a>
+                <a href="/portal" class="btn btn-primary" data-en="Resident Login" data-es="Acceso Residentes">Resident Login</a>
                 <a href="#contact" class="btn btn-secondary" data-en="Get in Touch" data-es="Contáctenos">Get in Touch</a>
             </div>
         </div>
@@ -698,20 +698,7 @@
             <div class="login-card">
                 <h3 data-en="Resident Sign In" data-es="Inicio de Sesión de Residentes">Resident Sign In</h3>
                 <p class="subtitle" data-en="Access your dashboard" data-es="Acceda a su panel de control">Access your dashboard</p>
-                <form>
-                    <div class="form-group">
-                        <label data-en="Email" data-es="Correo Electrónico">Email</label>
-                        <input type="email" placeholder="your@email.com" data-placeholder-en="your@email.com" data-placeholder-es="su@correo.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-en="Password" data-es="Contraseña">Password</label>
-                        <input type="password" placeholder="Enter your password" data-placeholder-en="Enter your password" data-placeholder-es="Ingrese su contraseña" required>
-                    </div>
-                    <button type="submit" class="login-btn" data-en="Sign In" data-es="Iniciar Sesión">Sign In</button>
-                </form>
-                <div class="login-footer">
-                    <a href="#" data-en="Forgot password?" data-es="¿Olvidó su contraseña?">Forgot password?</a>
-                </div>
+                <a href="/portal" class="login-btn" style="display: block; text-align: center; text-decoration: none;" data-en="Go to Portal" data-es="Ir al Portal">Go to Portal</a>
             </div>
         </div>
     </section>
@@ -720,18 +707,18 @@
     <section class="contact" id="contact">
         <h2 data-en="Questions? We're here to help." data-es="¿Preguntas? Estamos aquí para ayudar.">Questions? We're here to help.</h2>
         <p data-en="Reach out anytime and our team will get back to you promptly." data-es="Contáctenos en cualquier momento y nuestro equipo le responderá rápidamente.">Reach out anytime and our team will get back to you promptly.</p>
-        <a href="mailto:info@windsorproperties.co" class="contact-email">
-            ✉ info@windsorproperties.co
+        <a href="/cdn-cgi/l/email-protection#bad3d4dcd5facdd3d4dec9d5c8cac8d5cadfc8ced3dfc994d9d5" class="contact-email">
+            ✉ <span class="__cf_email__" data-cfemail="771e19111837001e1913041805070518071205031e1204591418">[email&#160;protected]</span>
         </a>
     </section>
 
     <!-- Footer -->
     <footer>
         <p>© 2026 Windsor Properties. All rights reserved.</p>
-        <a href="mailto:info@windsorproperties.co">info@windsorproperties.co</a>
+        <a href="/cdn-cgi/l/email-protection#a4cdcac2cbe4d3cdcac0d7cbd6d4d6cbd4c1d6d0cdc1d78ac7cb"><span class="__cf_email__" data-cfemail="670e09010827100e0903140815171508170215130e0214490408">[email&#160;protected]</span></a>
     </footer>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // Three.js Background Animation
         const canvas = document.getElementById('three-canvas');
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -854,20 +841,3 @@
                 if (placeholder) {
                     el.placeholder = placeholder;
                 }
-            });
-
-            // Store preference
-            localStorage.setItem('windsor-lang', lang);
-        }
-
-        // Load saved language preference
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('windsor-lang');
-            if (savedLang) {
-                setLanguage(savedLang);
-            }
-        });
-    </script>
-
-</body>
-</html>
