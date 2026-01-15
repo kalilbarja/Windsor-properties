@@ -616,11 +616,11 @@
             <li><a href="#features" data-en="Why Us" data-es="Por Qué Nosotros">Why Us</a></li>
             <li><a href="/portal" data-en="Resident Portal" data-es="Portal de Residentes">Resident Portal</a></li>
             <li><a href="#contact" data-en="Contact" data-es="Contacto">Contact</a></li>
-            <li><a href="/portal" class="nav-cta" data-en="Sign In" data-es="Iniciar Sesión">Sign In</a></li>
+            <li><a href="/portal" class="nav-cta" data-en="Sign In" data-es="Iniciar Sesión">Iniciar Sesión</a></li>
             <li class="lang-switcher">
-                <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" onclick="setLanguage('en')">EN</button>
                 <span class="lang-divider">|</span>
-                <button class="lang-btn" onclick="setLanguage('es')">ES</button>
+                <button class="lang-btn active" onclick="setLanguage('es')">ES</button>
             </li>
         </ul>
         <button class="mobile-menu">
@@ -816,7 +816,7 @@
         });
 
         // Language switcher
-        let currentLang = 'en';
+        let currentLang = 'es';
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -841,3 +841,15 @@
                 if (placeholder) {
                     el.placeholder = placeholder;
                 }
+            });
+
+            // Save preference
+            localStorage.setItem('windsor-lang', lang);
+        }
+
+        // Load saved language or default to Spanish
+        const savedLang = localStorage.getItem('windsor-lang') || 'es';
+        setLanguage(savedLang);
+    </script>
+</body>
+</html>
