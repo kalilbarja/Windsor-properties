@@ -319,7 +319,9 @@
         .sidebar-header img {
             height: 100px;
             width: auto;
-            filter: brightness(0) invert(1);
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
         }
 
         .sidebar-nav {
@@ -1960,7 +1962,25 @@
         // ==============================================
         // REQUEST FUNCTIONS
         // ==============================================
-        async function loadRequests() {
+        // Request caching
+        let cachedRequests = null;
+        let lastFetchTime = 0;
+        const CACHE_DURATION = 5000; // 5 seconds
+        let isLoadingRequests = false;
+
+        async function loadRequests(forceRefresh = false) {
+            // Prevent multiple simultaneous calls
+            if (isLoadingRequests) return;
+            
+            // Use cache if available and not expired
+            const now = Date.now();
+            if (!forceRefresh && cachedRequests && (now - lastFetchTime) < CACHE_DURATION) {
+                renderRequests(cachedRequests);
+                return;
+            }
+            
+            isLoadingRequests = true;
+            
             try {
                 const { data, error } = await db
                     .from('maintenance_requests')
@@ -1970,10 +1990,13 @@
 
                 if (error) throw error;
 
-                renderRequests(data || []);
+                cachedRequests = data || [];
+                lastFetchTime = now;
+                renderRequests(cachedRequests);
             } catch (error) {
-                console.error('Error loading requests:', error);
                 renderRequests([]);
+            } finally {
+                isLoadingRequests = false;
             }
         }
 
@@ -2229,16 +2252,13 @@
                 document.getElementById('photoPreview').innerHTML = '';
                 uploadedPhotos = [];
                 
-                // Reload requests and go to dashboard
-                await loadRequests();
+                // Reload requests (force refresh) and go to dashboard
+                await loadRequests(true);
                 showPage('dashboard');
 
             } catch (error) {
                 alert('Error al enviar solicitud: ' + escapeHtml(error.message));
             }
-            
-            // Reload requests
-            loadRequests();
         }
 
         function handlePhotoUpload(event) {
