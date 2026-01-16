@@ -1765,6 +1765,11 @@
             });
             
             localStorage.setItem('windsor-lang', lang);
+            
+            // Re-render requests with new language if logged in
+            if (currentUser) {
+                loadRequests();
+            }
         }
 
         // ==============================================
@@ -2090,15 +2095,16 @@
                 other: '📋'
             };
             
-            const categoryNames = {
-                plumbing: 'Plomería',
-                electrical: 'Eléctrico',
-                hvac: 'HVAC',
-                appliances: 'Electrodomésticos',
-                doors_windows: 'Puertas/Ventanas',
-                pest_control: 'Control de Plagas',
-                structural: 'Estructural',
-                other: 'Otro'
+            // Map database values to translation keys
+            const categoryTranslationKeys = {
+                plumbing: 'cat_plumbing',
+                electrical: 'cat_electrical',
+                hvac: 'cat_hvac',
+                appliances: 'cat_appliances',
+                doors_windows: 'cat_doors_windows',
+                pest_control: 'cat_pest_control',
+                structural: 'cat_structural',
+                other: 'cat_other'
             };
             
             const statusClass = {
@@ -2113,8 +2119,12 @@
                 completed: translations[currentLang].status_completed
             };
 
+            // Get translated category name
+            const categoryKey = categoryTranslationKeys[request.category];
+            const categoryName = categoryKey ? translations[currentLang][categoryKey] : request.category;
+
             // Escape user-provided data
-            const safeCategory = escapeHtml(categoryNames[request.category] || request.category);
+            const safeCategory = escapeHtml(categoryName);
             const safeStatus = escapeHtml(statusText[request.status]);
             const safeDate = escapeHtml(formatDate(request.created_at));
             const safeId = parseInt(request.id) || 0;
