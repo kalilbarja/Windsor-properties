@@ -1962,24 +1962,10 @@
         // ==============================================
         // REQUEST FUNCTIONS
         // ==============================================
-        // Request caching
-        let cachedRequests = null;
-        let lastFetchTime = 0;
-        const CACHE_DURATION = 5000; // 5 seconds
-        let isLoadingRequests = false;
 
         async function loadRequests(forceRefresh = false) {
-            // Prevent multiple simultaneous calls
-            if (isLoadingRequests) return;
-            
-            // Use cache if available and not expired
-            const now = Date.now();
-            if (!forceRefresh && cachedRequests && (now - lastFetchTime) < CACHE_DURATION) {
-                renderRequests(cachedRequests);
-                return;
-            }
-            
-            isLoadingRequests = true;
+            // Skip if no user logged in
+            if (!currentUser || !currentUser.resident_id) return;
             
             try {
                 const { data, error } = await db
@@ -1990,13 +1976,9 @@
 
                 if (error) throw error;
 
-                cachedRequests = data || [];
-                lastFetchTime = now;
-                renderRequests(cachedRequests);
+                renderRequests(data || []);
             } catch (error) {
                 renderRequests([]);
-            } finally {
-                isLoadingRequests = false;
             }
         }
 
