@@ -1340,11 +1340,9 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3ZmNkZG5nZ2FvZ3JqYXZyenljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgzNTU0MDQsImV4cCI6MjA4MzkzMTQwNH0.HeD2WxhDueNEEIA1X1nrp7Q5umOIVYJtb6c0HEv1z7c';
         
         // Initialize Supabase client
-        console.log('Initializing Supabase...');
         let db;
         try {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('Supabase initialized successfully!');
         } catch (e) {
             console.error('Failed to initialize Supabase:', e);
         }
@@ -1352,10 +1350,8 @@
         // Global login handler
         async function handleLogin(event) {
             event.preventDefault();
-            console.log('handleLogin called!');
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            console.log('Email:', email);
             await login(email, password);
         }
 
@@ -1536,25 +1532,20 @@
         // AUTHENTICATION FUNCTIONS
         // ==============================================
         async function login(email, password) {
-            console.log('Login started with:', email);
             const loginBtn = document.getElementById('loginBtn');
             loginBtn.classList.add('loading');
             loginBtn.innerHTML = '<div class="spinner"></div>';
 
             try {
-                console.log('Attempting Supabase auth...');
-                console.log('Supabase URL:', SUPABASE_URL);
                 
                 const { data, error } = await db.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
-                console.log('Auth response:', data, error);
 
                 if (error) throw error;
 
-                console.log('Auth successful, fetching profile...');
 
                 // Get resident profile with unit info
                 const { data: profile, error: profileError } = await db
@@ -1570,7 +1561,6 @@
                     .eq('user_id', data.user.id)
                     .single();
 
-                console.log('Profile response:', profile, profileError);
 
                 if (profileError) {
                     console.error('Profile error:', profileError);
@@ -1592,7 +1582,6 @@
                     monthly_payment: profile.monthly_payment
                 };
 
-                console.log('Current user set:', currentUser);
                 showApp();
             } catch (error) {
                 console.error('Login error:', error);
@@ -1863,7 +1852,6 @@
 
                 if (error) throw error;
 
-                console.log('Request saved:', data);
 
                 // Show success message
                 const successEl = document.getElementById('successMessage');
