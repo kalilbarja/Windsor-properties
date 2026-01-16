@@ -1615,6 +1615,11 @@
             
             // Close sidebar on mobile
             document.getElementById('sidebar').classList.remove('open');
+            
+            // Reload requests when viewing my-requests or dashboard
+            if (pageId === 'my-requests' || pageId === 'dashboard') {
+                loadRequests();
+            }
         }
 
         function toggleSidebar() {
