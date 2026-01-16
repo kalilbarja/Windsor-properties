@@ -2349,74 +2349,78 @@
                 await submitRequest(formData);
             });
             
-            // Check for existing session
-            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && db) {
-                db.auth.getSession().then(async ({ data: { session } }) => {
-                    if (session) {
-                        // Restore session - fetch profile directly without re-authenticating
-                        try {
-                            const { data: profile, error: profileError } = await db
-                                .from('residents')
-                                .select(`
-                                    *,
-                                    units (
-                                        identifier,
-                                        property_id,
-                                        properties (name)
-                                    )
-                                `)
-                                .eq('user_id', session.user.id)
-                                .single();
-
-                            if (!profileError && profile) {
-                                currentUser = {
-                                    id: session.user.id,
-                                    resident_id: profile.id,
-                                    name: escapeHtml(profile.name),
-                                    email: escapeHtml(profile.email),
-                                    phone: escapeHtml(profile.phone),
-                                    unit: escapeHtml(profile.units?.identifier) || 'N/A',
-                                    unit_id: profile.unit_id,
-                                    property: escapeHtml(profile.units?.properties?.name) || 'Windsor Properties',
-                                    property_id: profile.units?.property_id,
-                                    lease_start: profile.lease_start,
-                                    lease_end: profile.lease_end,
-                                    monthly_payment: profile.monthly_payment
-                                };
-                                resetSessionTimer();
-                                
-                                // Show app UI first
-                                document.getElementById('loginPage').style.display = 'none';
-                                document.getElementById('app').classList.add('active');
-                                
-                                // Update user info
-                                document.getElementById('userName').textContent = currentUser.name;
-                                document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
-                                document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
-                                document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
-                                document.getElementById('profileName').textContent = currentUser.name;
-                                document.getElementById('profileUnit').textContent = currentUser.unit;
-                                document.getElementById('profileProperty').textContent = currentUser.property;
-                                document.getElementById('profilePhone').textContent = currentUser.phone;
-                                document.getElementById('profileEmail').value = currentUser.email;
-                                document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
-                                    `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
-                                document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
-                                    formatDate(currentUser.lease_start) : '—';
-                                document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
-                                    formatDate(currentUser.lease_end) : '—';
-                                document.getElementById('reqPhone').value = currentUser.phone || '';
-                                document.getElementById('reqEmail').value = currentUser.email || '';
-                                
-                                // Load requests data
-                                await loadRequests(true);
-                            }
-                        } catch (e) {
-                            // Session invalid, stay on login page
-                        }
-                    }
-                });
-            }
+            // Check for existing session using IIFE
+            (async function checkSession() {
+                if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !db) return;
+                
+                try {
+                    const { data: { session } } = await db.auth.getSession();
+                    if (!session) return;
+                    
+                    // Fetch profile
+                    const { data: profile, error: profileError } = await db
+                        .from('residents')
+                        .select(`
+                            *,
+                            units (
+                                identifier,
+                                property_id,
+                                properties (name)
+                            )
+                        `)
+                        .eq('user_id', session.user.id)
+                        .single();
+                    
+                    if (profileError || !profile) return;
+                    
+                    // Set current user
+                    currentUser = {
+                        id: session.user.id,
+                        resident_id: profile.id,
+                        name: escapeHtml(profile.name),
+                        email: escapeHtml(profile.email),
+                        phone: escapeHtml(profile.phone),
+                        unit: escapeHtml(profile.units?.identifier) || 'N/A',
+                        unit_id: profile.unit_id,
+                        property: escapeHtml(profile.units?.properties?.name) || 'Windsor Properties',
+                        property_id: profile.units?.property_id,
+                        lease_start: profile.lease_start,
+                        lease_end: profile.lease_end,
+                        monthly_payment: profile.monthly_payment
+                    };
+                    
+                    resetSessionTimer();
+                    
+                    // Show app UI
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('app').classList.add('active');
+                    
+                    // Update all user info fields
+                    document.getElementById('userName').textContent = currentUser.name;
+                    document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
+                    document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
+                    document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+                    document.getElementById('profileName').textContent = currentUser.name;
+                    document.getElementById('profileUnit').textContent = currentUser.unit;
+                    document.getElementById('profileProperty').textContent = currentUser.property;
+                    document.getElementById('profilePhone').textContent = currentUser.phone;
+                    document.getElementById('profileEmail').value = currentUser.email;
+                    document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
+                        `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
+                    document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
+                        formatDate(currentUser.lease_start) : '—';
+                    document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
+                        formatDate(currentUser.lease_end) : '—';
+                    document.getElementById('reqPhone').value = currentUser.phone || '';
+                    document.getElementById('reqEmail').value = currentUser.email || '';
+                    
+                    // NOW load the requests
+                    await loadRequests(true);
+                    
+                } catch (e) {
+                    // Session invalid or error, stay on login page
+                }
+            })();
         });
     </script>
 
