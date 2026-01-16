@@ -2335,6 +2335,9 @@
             (async function checkSession() {
                 if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !db) return;
                 
+                // Small delay to ensure db is fully initialized
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (!session) return;
@@ -2396,11 +2399,20 @@
                     document.getElementById('reqPhone').value = currentUser.phone || '';
                     document.getElementById('reqEmail').value = currentUser.email || '';
                     
-                    // NOW load the requests
-                    await loadRequests(true);
+                    // NOW load the requests - fetch directly here to ensure it runs
+                    const { data: requests, error: reqError } = await db
+                        .from('maintenance_requests')
+                        .select('*')
+                        .eq('resident_id', currentUser.resident_id)
+                        .order('created_at', { ascending: false });
+                    
+                    if (!reqError) {
+                        renderRequests(requests || []);
+                    }
                     
                 } catch (e) {
                     // Session invalid or error, stay on login page
+                    console.error('Session restore error:', e);
                 }
             })();
         });
