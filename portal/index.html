@@ -2128,11 +2128,45 @@
             });
             
             // Check for existing session
-            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && supabase) {
-                db.auth.getSession().then(({ data: { session } }) => {
+            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && db) {
+                db.auth.getSession().then(async ({ data: { session } }) => {
                     if (session) {
-                        // Auto-login with existing session
-                        login(session.user.email, null);
+                        // Restore session - fetch profile directly without re-authenticating
+                        try {
+                            const { data: profile, error: profileError } = await db
+                                .from('residents')
+                                .select(`
+                                    *,
+                                    units (
+                                        identifier,
+                                        property_id,
+                                        properties (name)
+                                    )
+                                `)
+                                .eq('user_id', session.user.id)
+                                .single();
+
+                            if (!profileError && profile) {
+                                currentUser = {
+                                    id: session.user.id,
+                                    resident_id: profile.id,
+                                    name: escapeHtml(profile.name),
+                                    email: escapeHtml(profile.email),
+                                    phone: escapeHtml(profile.phone),
+                                    unit: escapeHtml(profile.units?.identifier) || 'N/A',
+                                    unit_id: profile.unit_id,
+                                    property: escapeHtml(profile.units?.properties?.name) || 'Windsor Properties',
+                                    property_id: profile.units?.property_id,
+                                    lease_start: profile.lease_start,
+                                    lease_end: profile.lease_end,
+                                    monthly_payment: profile.monthly_payment
+                                };
+                                resetSessionTimer();
+                                showApp();
+                            }
+                        } catch (e) {
+                            // Session invalid, stay on login page
+                        }
                     }
                 });
             }
