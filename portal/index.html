@@ -1790,63 +1790,72 @@
             const completed = requests.filter(r => r.status === 'completed');
             
             // Update stats
-            document.getElementById('statPending').textContent = pending.length;
-            document.getElementById('statInProgress').textContent = inProgress.length;
-            document.getElementById('statCompleted').textContent = completed.length;
+            const statPending = document.getElementById('statPending');
+            const statInProgress = document.getElementById('statInProgress');
+            const statCompleted = document.getElementById('statCompleted');
+            
+            if (statPending) statPending.textContent = pending.length;
+            if (statInProgress) statInProgress.textContent = inProgress.length;
+            if (statCompleted) statCompleted.textContent = completed.length;
             
             // Render recent requests (dashboard)
             const recentEl = document.getElementById('recentRequests');
-            const recentRequests = [...requests].sort((a, b) => 
-                new Date(b.created_at) - new Date(a.created_at)
-            ).slice(0, 5);
-            
-            if (recentRequests.length === 0) {
-                recentEl.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                        </svg>
-                        <p>${translations[currentLang].no_requests}</p>
-                    </div>
-                `;
-            } else {
-                recentEl.innerHTML = recentRequests.map(r => renderRequestItem(r)).join('');
+            if (recentEl) {
+                const recentRequests = [...requests].sort((a, b) => 
+                    new Date(b.created_at) - new Date(a.created_at)
+                ).slice(0, 5);
+                
+                if (recentRequests.length === 0) {
+                    recentEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <p>${translations[currentLang].no_requests}</p>
+                        </div>
+                    `;
+                } else {
+                    recentEl.innerHTML = recentRequests.map(r => renderRequestItem(r)).join('');
+                }
             }
             
             // Render current requests (my requests page)
             const currentEl = document.getElementById('currentRequests');
-            const currentRequests = requests.filter(r => r.status !== 'completed');
-            
-            if (currentRequests.length === 0) {
-                currentEl.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="16 12 12 8 8 12"/>
-                            <line x1="12" y1="16" x2="12" y2="8"/>
-                        </svg>
-                        <p>${translations[currentLang].no_requests}</p>
-                    </div>
-                `;
-            } else {
-                currentEl.innerHTML = currentRequests.map(r => renderRequestItem(r)).join('');
+            if (currentEl) {
+                const currentRequests = requests.filter(r => r.status !== 'completed');
+                
+                if (currentRequests.length === 0) {
+                    currentEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="16 12 12 8 8 12"/>
+                                <line x1="12" y1="16" x2="12" y2="8"/>
+                            </svg>
+                            <p>${translations[currentLang].no_current_requests || translations[currentLang].no_requests}</p>
+                        </div>
+                    `;
+                } else {
+                    currentEl.innerHTML = currentRequests.map(r => renderRequestItem(r)).join('');
+                }
             }
             
             // Render history (my requests page)
             const historyEl = document.getElementById('historyRequests');
-            
-            if (completed.length === 0) {
-                historyEl.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                        <p>${translations[currentLang].no_requests}</p>
-                    </div>
-                `;
-            } else {
-                historyEl.innerHTML = completed.map(r => renderRequestItem(r)).join('');
+            if (historyEl) {
+                if (completed.length === 0) {
+                    historyEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            <p>${translations[currentLang].no_history || translations[currentLang].no_requests}</p>
+                        </div>
+                    `;
+                } else {
+                    historyEl.innerHTML = completed.map(r => renderRequestItem(r)).join('');
+                }
             }
         }
 
