@@ -1334,6 +1334,99 @@
 
     <script>
         // ==============================================
+        // SECURITY UTILITIES
+        // ==============================================
+        
+        // HTML escaping to prevent XSS
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+        
+        // Rate limiting for login attempts
+        const loginAttempts = {
+            count: 0,
+            lastAttempt: 0,
+            maxAttempts: 5,
+            lockoutTime: 300000, // 5 minutes in ms
+            isLocked: function() {
+                if (this.count >= this.maxAttempts) {
+                    const timePassed = Date.now() - this.lastAttempt;
+                    if (timePassed < this.lockoutTime) {
+                        return true;
+                    } else {
+                        this.reset();
+                        return false;
+                    }
+                }
+                return false;
+            },
+            recordAttempt: function() {
+                this.count++;
+                this.lastAttempt = Date.now();
+            },
+            reset: function() {
+                this.count = 0;
+                this.lastAttempt = 0;
+            },
+            getRemainingTime: function() {
+                const remaining = this.lockoutTime - (Date.now() - this.lastAttempt);
+                return Math.ceil(remaining / 60000); // minutes
+            }
+        };
+        
+        // Input validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        function validatePhone(phone) {
+            const re = /^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+            return re.test(phone.replace(/\s/g, ''));
+        }
+        
+        function sanitizeInput(input, maxLength = 2000) {
+            if (!input) return '';
+            return String(input).trim().substring(0, maxLength);
+        }
+        
+        // File validation
+        function validateFile(file) {
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            
+            if (!allowedTypes.includes(file.type)) {
+                return { valid: false, error: 'Tipo de archivo no permitido. Solo se permiten imágenes.' };
+            }
+            if (file.size > maxSize) {
+                return { valid: false, error: 'Archivo demasiado grande. Máximo 5MB.' };
+            }
+            return { valid: true };
+        }
+        
+        // Session timeout (24 hours)
+        const SESSION_TIMEOUT = 24 * 60 * 60 * 1000;
+        let sessionTimer;
+        
+        function resetSessionTimer() {
+            clearTimeout(sessionTimer);
+            sessionTimer = setTimeout(() => {
+                alert('Su sesión ha expirado. Por favor inicie sesión nuevamente.');
+                logout();
+            }, SESSION_TIMEOUT);
+        }
+        
+        // Reset timer on user activity
+        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, () => {
+                if (currentUser) resetSessionTimer();
+            }, { passive: true });
+        });
+
+        // ==============================================
         // CONFIGURATION
         // ==============================================
         const SUPABASE_URL = 'https://xwfcddnggaogrjavrzyc.supabase.co';
@@ -1344,7 +1437,7 @@
         try {
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch (e) {
-            console.error('Failed to initialize Supabase:', e);
+            // Silent fail - will show error on login attempt
         }
 
         // Global login handler
@@ -1532,20 +1625,32 @@
         // AUTHENTICATION FUNCTIONS
         // ==============================================
         async function login(email, password) {
+            // Check rate limiting
+            if (loginAttempts.isLocked()) {
+                showLoginError(`Demasiados intentos fallidos. Intente de nuevo en ${loginAttempts.getRemainingTime()} minutos.`);
+                return;
+            }
+            
+            // Validate email format
+            if (!validateEmail(email)) {
+                showLoginError('Por favor ingrese un correo electrónico válido.');
+                return;
+            }
+            
             const loginBtn = document.getElementById('loginBtn');
             loginBtn.classList.add('loading');
             loginBtn.innerHTML = '<div class="spinner"></div>';
 
             try {
-                
                 const { data, error } = await db.auth.signInWithPassword({
-                    email: email,
+                    email: sanitizeInput(email, 255),
                     password: password
                 });
 
-
-                if (error) throw error;
-
+                if (error) {
+                    loginAttempts.recordAttempt();
+                    throw error;
+                }
 
                 // Get resident profile with unit info
                 const { data: profile, error: profileError } = await db
@@ -1561,31 +1666,35 @@
                     .eq('user_id', data.user.id)
                     .single();
 
-
                 if (profileError) {
-                    console.error('Profile error:', profileError);
                     throw new Error('No se encontró perfil de residente para este usuario');
                 }
+
+                // Reset login attempts on success
+                loginAttempts.reset();
 
                 currentUser = {
                     id: data.user.id,
                     resident_id: profile.id,
-                    name: profile.name,
-                    email: profile.email,
-                    phone: profile.phone,
-                    unit: profile.units?.identifier || 'N/A',
+                    name: escapeHtml(profile.name),
+                    email: escapeHtml(profile.email),
+                    phone: escapeHtml(profile.phone),
+                    unit: escapeHtml(profile.units?.identifier) || 'N/A',
                     unit_id: profile.unit_id,
-                    property: profile.units?.properties?.name || 'Windsor Properties',
+                    property: escapeHtml(profile.units?.properties?.name) || 'Windsor Properties',
                     property_id: profile.units?.property_id,
                     lease_start: profile.lease_start,
                     lease_end: profile.lease_end,
                     monthly_payment: profile.monthly_payment
                 };
 
+                // Start session timer
+                resetSessionTimer();
+                
                 showApp();
             } catch (error) {
-                console.error('Login error:', error);
-                showLoginError(error.message);
+                // Generic error message to prevent information disclosure
+                showLoginError('Credenciales incorrectas. Por favor verifique su correo y contraseña.');
                 loginBtn.classList.remove('loading');
                 loginBtn.innerHTML = '<span data-translate="sign_in">Iniciar Sesión</span>';
             }
@@ -1593,12 +1702,13 @@
 
         function showLoginError(message) {
             const errorEl = document.getElementById('loginError');
-            errorEl.textContent = message;
+            errorEl.textContent = escapeHtml(message);
             errorEl.style.display = 'block';
         }
 
         function logout() {
             currentUser = null;
+            clearTimeout(sessionTimer);
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('app').classList.remove('active');
             if (db) {
@@ -1760,14 +1870,20 @@
                 completed: translations[currentLang].status_completed
             };
 
+            // Escape user-provided data
+            const safeCategory = escapeHtml(categoryNames[request.category] || request.category);
+            const safeStatus = escapeHtml(statusText[request.status]);
+            const safeDate = escapeHtml(formatDate(request.created_at));
+            const safeId = parseInt(request.id) || 0;
+
             return `
-                <div class="request-item" onclick="showRequestDetail(${request.id})">
+                <div class="request-item" onclick="showRequestDetail(${safeId})">
                     <div class="request-icon">${categoryIcons[request.category] || '📋'}</div>
                     <div class="request-info">
-                        <div class="request-category">${categoryNames[request.category] || request.category}</div>
-                        <div class="request-date">${formatDate(request.created_at)}</div>
+                        <div class="request-category">${safeCategory}</div>
+                        <div class="request-date">${safeDate}</div>
                     </div>
-                    <span class="request-status ${statusClass[request.status]}">${statusText[request.status]}</span>
+                    <span class="request-status ${statusClass[request.status] || ''}">${safeStatus}</span>
                 </div>
             `;
         }
@@ -1831,27 +1947,57 @@
         // ==============================================
         async function submitRequest(formData) {
             try {
+                // Validate required fields
+                const validCategories = ['plumbing', 'electrical', 'hvac', 'appliances', 'doors_windows', 'pest_control', 'structural', 'other'];
+                const validLocations = ['kitchen', 'bathroom_main', 'bathroom_secondary', 'bedroom', 'living_room', 'laundry', 'exterior', 'common_area'];
+                const validContactMethods = ['phone', 'text', 'email'];
+                const validTimeWindows = ['morning', 'afternoon'];
+                
+                if (!validCategories.includes(formData.category)) {
+                    throw new Error('Categoría inválida');
+                }
+                if (!validLocations.includes(formData.location)) {
+                    throw new Error('Ubicación inválida');
+                }
+                if (!validContactMethods.includes(formData.contact_method)) {
+                    throw new Error('Método de contacto inválido');
+                }
+                if (!validTimeWindows.includes(formData.time_window)) {
+                    throw new Error('Ventana de tiempo inválida');
+                }
+                if (!formData.description || formData.description.trim().length < 10) {
+                    throw new Error('La descripción debe tener al menos 10 caracteres');
+                }
+                if (formData.phone && !validatePhone(formData.phone)) {
+                    throw new Error('Número de teléfono inválido');
+                }
+                if (formData.email && !validateEmail(formData.email)) {
+                    throw new Error('Correo electrónico inválido');
+                }
+                
+                // Sanitize inputs
+                const sanitizedData = {
+                    resident_id: currentUser.resident_id,
+                    unit_id: currentUser.unit_id,
+                    property_id: currentUser.property_id,
+                    category: formData.category,
+                    location: formData.location,
+                    description: sanitizeInput(formData.description, 2000),
+                    preferred_contact: formData.contact_method,
+                    preferred_time: formData.time_window,
+                    contact_phone: sanitizeInput(formData.phone, 20),
+                    contact_email: sanitizeInput(formData.email, 255),
+                    status: 'pending'
+                };
+                
                 // Save to database
                 const { data, error } = await db
                     .from('maintenance_requests')
-                    .insert({
-                        resident_id: currentUser.resident_id,
-                        unit_id: currentUser.unit_id,
-                        property_id: currentUser.property_id,
-                        category: formData.category,
-                        location: formData.location,
-                        description: formData.description,
-                        preferred_contact: formData.contact_method,
-                        preferred_time: formData.time_window,
-                        contact_phone: formData.phone,
-                        contact_email: formData.email,
-                        status: 'pending'
-                    })
+                    .insert(sanitizedData)
                     .select()
                     .single();
 
                 if (error) throw error;
-
 
                 // Show success message
                 const successEl = document.getElementById('successMessage');
@@ -1871,8 +2017,7 @@
                 showPage('dashboard');
 
             } catch (error) {
-                console.error('Error submitting request:', error);
-                alert('Error al enviar solicitud: ' + error.message);
+                alert('Error al enviar solicitud: ' + escapeHtml(error.message));
             }
             
             // Reload requests
@@ -1889,6 +2034,13 @@
             }
             
             files.forEach(file => {
+                // Validate file before processing
+                const validation = validateFile(file);
+                if (!validation.valid) {
+                    alert(validation.error);
+                    return;
+                }
+                
                 if (uploadedPhotos.length < 5) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
