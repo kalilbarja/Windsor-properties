@@ -1927,36 +1927,57 @@
         }
 
         async function showApp() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('app').classList.add('active');
+            const loginPage = document.getElementById('loginPage');
+            const app = document.getElementById('app');
+            
+            if (loginPage) loginPage.style.display = 'none';
+            if (app) app.classList.add('active');
             
             // Update user info in sidebar
-            document.getElementById('userName').textContent = currentUser.name;
-            document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
-            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
-            document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+            const userName = document.getElementById('userName');
+            const userUnit = document.getElementById('userUnit');
+            const userAvatar = document.getElementById('userAvatar');
+            const welcomeName = document.getElementById('welcomeName');
+            
+            if (userName) userName.textContent = currentUser.name;
+            if (userUnit) userUnit.textContent = `Unidad ${currentUser.unit}`;
+            if (userAvatar) userAvatar.textContent = currentUser.name.split(' ').map(n => n[0]).join('');
+            if (welcomeName) welcomeName.textContent = currentUser.name.split(' ')[0];
             
             // Update profile page
-            document.getElementById('profileName').textContent = currentUser.name;
-            document.getElementById('profileUnit').textContent = currentUser.unit;
-            document.getElementById('profileProperty').textContent = currentUser.property;
-            document.getElementById('profilePhone').textContent = currentUser.phone;
-            document.getElementById('profileEmail').value = currentUser.email;
+            const profileName = document.getElementById('profileName');
+            const profileUnit = document.getElementById('profileUnit');
+            const profileProperty = document.getElementById('profileProperty');
+            const profilePhone = document.getElementById('profilePhone');
+            const profileEmail = document.getElementById('profileEmail');
+            
+            if (profileName) profileName.textContent = currentUser.name;
+            if (profileUnit) profileUnit.textContent = currentUser.unit;
+            if (profileProperty) profileProperty.textContent = currentUser.property;
+            if (profilePhone) profilePhone.textContent = currentUser.phone;
+            if (profileEmail) profileEmail.value = currentUser.email;
             
             // Update lease page
-            document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
+            const leasePayment = document.getElementById('leasePayment');
+            const leaseStart = document.getElementById('leaseStart');
+            const leaseEnd = document.getElementById('leaseEnd');
+            
+            if (leasePayment) leasePayment.textContent = currentUser.monthly_payment ? 
                 `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
-            document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
+            if (leaseStart) leaseStart.textContent = currentUser.lease_start ? 
                 formatDate(currentUser.lease_start) : '—';
-            document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
+            if (leaseEnd) leaseEnd.textContent = currentUser.lease_end ? 
                 formatDate(currentUser.lease_end) : '—';
             
             // Pre-fill contact info in request form
-            document.getElementById('reqPhone').value = currentUser.phone || '';
-            document.getElementById('reqEmail').value = currentUser.email || '';
+            const reqPhone = document.getElementById('reqPhone');
+            const reqEmail = document.getElementById('reqEmail');
             
-            // Load requests immediately (force on first load)
-            await loadRequests(true);
+            if (reqPhone) reqPhone.value = currentUser.phone || '';
+            if (reqEmail) reqEmail.value = currentUser.email || '';
+            
+            // Load requests immediately
+            await loadRequests();
         }
 
         // ==============================================
@@ -2335,9 +2356,6 @@
             (async function checkSession() {
                 if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || !db) return;
                 
-                // Small delay to ensure db is fully initialized
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (!session) return;
@@ -2376,42 +2394,10 @@
                     
                     resetSessionTimer();
                     
-                    // Show app UI
-                    document.getElementById('loginPage').style.display = 'none';
-                    document.getElementById('app').classList.add('active');
-                    
-                    // Update all user info fields
-                    document.getElementById('userName').textContent = currentUser.name;
-                    document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
-                    document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
-                    document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
-                    document.getElementById('profileName').textContent = currentUser.name;
-                    document.getElementById('profileUnit').textContent = currentUser.unit;
-                    document.getElementById('profileProperty').textContent = currentUser.property;
-                    document.getElementById('profilePhone').textContent = currentUser.phone;
-                    document.getElementById('profileEmail').value = currentUser.email;
-                    document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
-                        `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
-                    document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
-                        formatDate(currentUser.lease_start) : '—';
-                    document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
-                        formatDate(currentUser.lease_end) : '—';
-                    document.getElementById('reqPhone').value = currentUser.phone || '';
-                    document.getElementById('reqEmail').value = currentUser.email || '';
-                    
-                    // NOW load the requests - fetch directly here to ensure it runs
-                    const { data: requests, error: reqError } = await db
-                        .from('maintenance_requests')
-                        .select('*')
-                        .eq('resident_id', currentUser.resident_id)
-                        .order('created_at', { ascending: false });
-                    
-                    if (!reqError) {
-                        renderRequests(requests || []);
-                    }
+                    // Use showApp which handles all UI updates and loads requests
+                    await showApp();
                     
                 } catch (e) {
-                    // Session invalid or error, stay on login page
                     console.error('Session restore error:', e);
                 }
             })();
