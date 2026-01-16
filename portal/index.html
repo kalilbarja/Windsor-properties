@@ -1886,7 +1886,7 @@
                 // Start session timer
                 resetSessionTimer();
                 
-                showApp();
+                await showApp();
             } catch (error) {
                 // Generic error message to prevent information disclosure
                 showLoginError('Credenciales incorrectas. Por favor verifique su correo y contraseña.');
@@ -1926,7 +1926,7 @@
             }
         }
 
-        function showApp() {
+        async function showApp() {
             document.getElementById('loginPage').style.display = 'none';
             document.getElementById('app').classList.add('active');
             
@@ -1955,8 +1955,8 @@
             document.getElementById('reqPhone').value = currentUser.phone || '';
             document.getElementById('reqEmail').value = currentUser.email || '';
             
-            // Load requests
-            loadRequests();
+            // Load requests immediately (force on first load)
+            await loadRequests(true);
         }
 
         // ==============================================
@@ -2384,7 +2384,7 @@
                                     monthly_payment: profile.monthly_payment
                                 };
                                 resetSessionTimer();
-                                showApp();
+                                await showApp();
                             }
                         } catch (e) {
                             // Session invalid, stay on login page
