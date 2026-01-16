@@ -943,7 +943,7 @@
                 <h1 data-translate="login_title">Portal de Residentes</h1>
                 <p class="subtitle" data-translate="login_subtitle">Ingrese sus credenciales para acceder</p>
                 
-                <div id="loginError" class="login-error"></div>
+                <div id="loginError" class="login-error" style="display: none;"></div>
                 
                 <form id="loginForm" onsubmit="handleLogin(event)">
                     <div class="form-group">
@@ -1705,6 +1705,21 @@
             errorEl.textContent = escapeHtml(message);
             errorEl.style.display = 'block';
         }
+
+        function clearLoginError() {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = '';
+            errorEl.style.display = 'none';
+        }
+
+        // Clear error when user starts typing
+        document.addEventListener('DOMContentLoaded', function() {
+            clearLoginError();
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            if (emailInput) emailInput.addEventListener('focus', clearLoginError);
+            if (passwordInput) passwordInput.addEventListener('focus', clearLoginError);
+        });
 
         function logout() {
             currentUser = null;
