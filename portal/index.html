@@ -2384,7 +2384,32 @@
                                     monthly_payment: profile.monthly_payment
                                 };
                                 resetSessionTimer();
-                                await showApp();
+                                
+                                // Show app UI first
+                                document.getElementById('loginPage').style.display = 'none';
+                                document.getElementById('app').classList.add('active');
+                                
+                                // Update user info
+                                document.getElementById('userName').textContent = currentUser.name;
+                                document.getElementById('userUnit').textContent = `Unidad ${currentUser.unit}`;
+                                document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('');
+                                document.getElementById('welcomeName').textContent = currentUser.name.split(' ')[0];
+                                document.getElementById('profileName').textContent = currentUser.name;
+                                document.getElementById('profileUnit').textContent = currentUser.unit;
+                                document.getElementById('profileProperty').textContent = currentUser.property;
+                                document.getElementById('profilePhone').textContent = currentUser.phone;
+                                document.getElementById('profileEmail').value = currentUser.email;
+                                document.getElementById('leasePayment').textContent = currentUser.monthly_payment ? 
+                                    `RD$ ${currentUser.monthly_payment.toLocaleString()}` : '—';
+                                document.getElementById('leaseStart').textContent = currentUser.lease_start ? 
+                                    formatDate(currentUser.lease_start) : '—';
+                                document.getElementById('leaseEnd').textContent = currentUser.lease_end ? 
+                                    formatDate(currentUser.lease_end) : '—';
+                                document.getElementById('reqPhone').value = currentUser.phone || '';
+                                document.getElementById('reqEmail').value = currentUser.email || '';
+                                
+                                // Load requests data
+                                await loadRequests(true);
                             }
                         } catch (e) {
                             // Session invalid, stay on login page
